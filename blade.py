@@ -4,26 +4,21 @@
 
 from __init__ import *
 
-N_INTEGRATION = 30
-
 class rotorblade:
 
-    def __init__(self, blade_file):
+    def __init__(self, blade_file_path):
             
-            self.blade_file = blade_file
+            self.blade_file_path = blade_file_path
             self.read_blade_data()
 
     # Reads the blade data from input JSON file
     def read_blade_data(self):
           
-            with open(self.blade_file) as file:
+            with open(self.blade_file_path) as file:
                 raw_data = json.load(file)
             
             self.airfoil_data_file_path = raw_data['airfoil_data_file_path']
             self.airfoil = airfoil.airfoil(self.airfoil_data_file_path)
-
-            self.twist_data_file_path = raw_data['twist_data_file_path']
-            self.chord_data_file_path = raw_data['chord_data_file_path']
 
             self.radius = raw_data['radius']
             self.root_cutout = raw_data['root_cutout']
@@ -69,7 +64,7 @@ class rotorblade:
          
         data = msg.get_payload()
         
-        r = np.linspace(self.root_cutout,self.radius,N_INTEGRATION)
+        r = np.linspace(self.root_cutout,self.radius,N_INTEGRATION_BLADE)
         chord = self.get_chord(r).get_payload()['chord']
         twist = self.get_twist(r).get_payload()['twist']
         theta = data['pitch'] + twist

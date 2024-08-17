@@ -5,3 +5,8 @@ import message
 import airfoil
 import blade
 import rotor
+
+
+###### ENVIRONMENT VARIABLES ######
+
+N_INTEGRATION_BLADE = 30
