@@ -12,8 +12,6 @@ class rotorblade:
             
             self.blade_file = blade_file
             self.read_blade_data()
-            self.read_chord_data()
-            self.read_twist_data()
 
     # Reads the blade data from input JSON file
     def read_blade_data(self):
@@ -30,25 +28,11 @@ class rotorblade:
             self.radius = raw_data['radius']
             self.root_cutout = raw_data['root_cutout']
 
-    # Reads the chord data from input JSON file
-    # x is the normalized radius
-    def read_chord_data(self):
-            
-        with open(self.chord_data_file_path) as file:
-            raw_data = json.load(file)
-        
-        self.x_chord = np.array(raw_data["x"])
-        self.chord = np.array(raw_data["chord"])
+            self.x_chord = np.array(raw_data["x_chord"])
+            self.chord = np.array(raw_data["chord"])
 
-    # Reads the twist data from input JSON file
-    # x is the normalized radius
-    def read_twist_data(self):
-            
-        with open(self.twist_data_file_path) as file:
-            raw_data = json.load(file)
-        
-        self.x_twist = np.array(raw_data["x"])
-        self.twist = np.array(raw_data["twist"])
+            self.x_twist = np.array(raw_data["x_twist"])
+            self.twist = np.array(raw_data["twist"])
 
     def get_chord(self, radius: np.ndarray):
          
