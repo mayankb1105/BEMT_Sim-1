@@ -1,0 +1,20 @@
+import json
+
+dictionary = {}
+
+while True:
+    key = input("Enter a key: ")
+    value = input("Enter a value: ")
+    # parse value to int or float if possible
+    try:
+        value = float(value)
+    except:
+        pass
+
+    dictionary[key] = value
+    if input("Do you want to add another key-value pair? (y/n): ") == "n":
+        break
+
+fname = input("Enter the name of the file: ")
+with open(fname, "w") as f:
+    json.dump(dictionary, f)

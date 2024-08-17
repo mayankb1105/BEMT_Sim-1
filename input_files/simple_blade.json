@@ -1,0 +1,1 @@
+{"airfoil_data_file_path": "input_files/flat_airfoil.json", "twist_data_file_path": "input_files/no_twist.json", "chord_data_file_path": "input_files/const_chord.json", "radius": 0.762, "root_cutout": 0.125}
