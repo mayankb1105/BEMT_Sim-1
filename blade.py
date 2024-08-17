@@ -4,8 +4,6 @@
 
 from __init__ import *
 
-N_INTEGRATION = 30
-
 class rotorblade:
 
     def __init__(self, blade_file):
@@ -69,7 +67,7 @@ class rotorblade:
          
         data = msg.get_payload()
         
-        r = np.linspace(self.root_cutout,self.radius,N_INTEGRATION)
+        r = np.linspace(self.root_cutout,self.radius,N_INTEGRATION_BLADE)
         chord = self.get_chord(r).get_payload()['chord']
         twist = self.get_twist(r).get_payload()['twist']
         theta = data['pitch'] + twist
