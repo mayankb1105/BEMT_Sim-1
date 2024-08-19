@@ -87,8 +87,8 @@ class rotorblade:
 
         rho = data['atmosphere']['density']
 
-        dT = 0.5*data['number_of_blades']*rho*(U_p**2 + U_t**2)*chord*(CL*cos_phi - CD*sin_phi)
-        dQ = r*0.5*data['number_of_blades']*rho*(U_p**2 + U_t**2)*chord*(CD*cos_phi + CL*sin_phi)
+        dT = 0.5*rho*(U_p**2 + U_t**2)*chord*(CL*cos_phi - CD*sin_phi)
+        dQ = r*0.5*rho*(U_p**2 + U_t**2)*chord*(CD*cos_phi + CL*sin_phi)
         
         thrust_force = np.trapz(dT,r)
         torque = np.trapz(dQ,r)
