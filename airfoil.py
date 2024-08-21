@@ -45,6 +45,6 @@ class airfoil:
         response.add_payload({'CM':CM_value})
 
         if np.any(alpha > self.alphacrit):
-            response.add_warning({'Stall':f'Critical AoA exceeded at {alpha.max()} deg.'})
+            response.add_warning({'Stall':f'Critical AoA exceeded at {alpha.max()*180/np.pi} deg.'})
 
         return response
