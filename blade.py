@@ -80,7 +80,7 @@ class rotorblade:
         cos_phi = np.cos(phi)
         sin_phi = np.sin(phi)
 
-        airfoil_performance = self.airfoil.get_performance(phi).get_payload()
+        airfoil_performance = self.airfoil.get_performance(theta - phi).get_payload()
         CL = airfoil_performance['CL']
         CD = airfoil_performance['CD']
         CM = airfoil_performance['CM']
@@ -89,13 +89,18 @@ class rotorblade:
 
         dT = 0.5*rho*(U_p**2 + U_t**2)*chord*(CL*cos_phi - CD*sin_phi)
         dQ = r*0.5*rho*(U_p**2 + U_t**2)*chord*(CD*cos_phi + CL*sin_phi)
-        
-        thrust_force = np.trapz(dT,r)
+
+        thrust = np.trapz(dT,r)
         torque = np.trapz(dQ,r)
         power = torque*data['omega']
 
+        non_dims = {}
+        non_dims['CT'] = 2 * thrust * data['number_of_blades'] / (rho * np.pi * self.radius**4 * data['omega']**2)
+        non_dims['sigma'] = data['number_of_blades']*chord[0]*(self.radius-self.root_cutout)/(np.pi*self.radius**2)
+
         response = message.simMessage()
-        response.add_payload({'thrust':thrust_force, 'torque':torque, 'power':power})
+        response.add_payload({'thrust':thrust, 'torque':torque, 'power':power})
+        response.add_payload({'non_dims':non_dims})
 
         return response
         
