@@ -63,6 +63,8 @@ class rotorblade:
     def get_performance(self, msg: message.simMessage):
          
         data = msg.get_payload()
+
+        response = message.simMessage()
         
         r = np.linspace(self.root_cutout,self.radius,N_INTEGRATION_BLADE)
         chord = self.get_chord(r).get_payload()['chord']
@@ -73,6 +75,22 @@ class rotorblade:
         sigma = data['number_of_blades']*chord/(2*np.pi*r)
         coeff = sigma*self.airfoil.cl_alpha/16 - lambda_c/2
         lambda_ = (coeff**2 + sigma*self.airfoil.cl_alpha*theta*r/self.radius/8)**0.5 - coeff
+
+        ## Prandtl's tip loss factor
+        converged = False
+        for i in range(PRANDTL_TIPLOSS_ITERATIONS):
+            lambda_old = lambda_
+            f = data['number_of_blades']*(1-r/self.radius)/2/(lambda_)
+            F = 2/np.pi*np.arccos(np.exp(-f))
+            lambda_ = sigma * self.airfoil.cl_alpha/16/F * (np.sqrt(1+32*F*theta*r/self.radius/sigma/self.airfoil.cl_alpha) - 1)
+            if np.allclose(lambda_,lambda_old,rtol=PRANDTL_TIPLOSS_TOLERANCE):
+                converged = True
+                break
+        
+        if not converged:
+            response.add_warning({'TipLoss':'Prandtl tip loss factor did not converge.'})
+
+        ## Relative velocities wrt blade calculations
 
         U_p = lambda_ * data['omega'] * r
         U_t = data['h_vel'] + data['omega']*r
@@ -101,7 +119,6 @@ class rotorblade:
         non_dims['CT'] = 2 * thrust * data['number_of_blades'] / (rho * np.pi * self.radius**4 * data['omega']**2)
         non_dims['sigma'] = data['number_of_blades']*chord[0]*(self.radius-self.root_cutout)/(np.pi*self.radius**2)
 
-        response = message.simMessage()
         response.add_payload({'thrust':thrust, 'torque':torque, 'power':power})
         response.add_payload({'non_dims':non_dims})
 
