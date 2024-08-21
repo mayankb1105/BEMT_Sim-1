@@ -81,6 +81,7 @@ class rotorblade:
         sin_phi = np.sin(phi)
 
         airfoil_performance = self.airfoil.get_performance(theta - phi).get_payload()
+        airfoil_performance = self.airfoil.get_performance(theta - phi).get_payload()
         CL = airfoil_performance['CL']
         CD = airfoil_performance['CD']
         CM = airfoil_performance['CM']
@@ -89,6 +90,8 @@ class rotorblade:
 
         dT = 0.5*rho*(U_p**2 + U_t**2)*chord*(CL*cos_phi - CD*sin_phi)
         dQ = r*0.5*rho*(U_p**2 + U_t**2)*chord*(CD*cos_phi + CL*sin_phi)
+
+        thrust = np.trapz(dT,r)
 
         thrust = np.trapz(dT,r)
         torque = np.trapz(dQ,r)
