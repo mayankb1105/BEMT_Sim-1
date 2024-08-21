@@ -66,7 +66,7 @@ class rotorblade:
 
         response = message.simMessage()
         
-        r = np.linspace(self.root_cutout,self.radius,N_INTEGRATION_BLADE)
+        r = np.linspace(self.root_cutout,self.radius*(1 - TIP_CUTOUT_FACTOR),N_INTEGRATION_BLADE)
         chord = self.get_chord(r).get_payload()['chord']
         twist = self.get_twist(r).get_payload()['twist']
         theta = data['pitch'] + twist
@@ -80,7 +80,7 @@ class rotorblade:
         converged = False
         for i in range(PRANDTL_TIPLOSS_ITERATIONS):
             lambda_old = lambda_
-            f = data['number_of_blades']*(1-r/self.radius)/2/(lambda_)
+            f = data['number_of_blades']*(1-r/self.radius)/2/lambda_
             F = 2/np.pi*np.arccos(np.exp(-f))
             lambda_ = sigma * self.airfoil.cl_alpha/16/F * (np.sqrt(1+32*F*theta*r/self.radius/sigma/self.airfoil.cl_alpha) - 1)
             if np.allclose(lambda_,lambda_old,rtol=PRANDTL_TIPLOSS_TOLERANCE):
