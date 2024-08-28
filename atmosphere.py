@@ -1,6 +1,6 @@
 from __init__ import *
 
-class atmosphere:
+class ISA:
 
     def __init__(self, T_deviation: float = 0):
         
