@@ -1,5 +1,6 @@
 from __init__ import *
 
+### ISA STANDARD ATMOSPHERE WITH A FIXED TEMPERATURE DEVIATION ###
 class ISA:
 
     def __init__(self, T_deviation: float = 0):
