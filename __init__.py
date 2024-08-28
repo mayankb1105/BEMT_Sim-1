@@ -12,6 +12,7 @@ ENGINE_CEILING_TOLERANCE = 500 #m
 ENGINE_OVERLOAD_FACTOR = 1.1
 
 import message
+import atmosphere
 import airfoil
 import blade
 import rotor
