@@ -92,8 +92,8 @@ class rotorblade:
 
         ## Relative velocities wrt blade calculations
 
-        U_p = lambda_ * data['omega'] * r
-        U_t = data['h_vel'] + data['omega']*r
+        U_p = lambda_ * data['omega'] * self.radius
+        U_t = data['h_vel'] + data['omega'] * self.radius
         phi = np.arctan(U_p/U_t)
         cos_phi = np.cos(phi)
         sin_phi = np.sin(phi)
