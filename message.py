@@ -64,3 +64,11 @@ class simMessage:
     
     def get_errors(self):
         return self.errors
+    
+    def __add__(self, message2):
+        
+        payload = {**self.payload, **message2.payload}
+        warnings = {**self.warnings, **message2.warnings}
+        errors = {**self.errors, **message2.errors}
+        
+        return simMessage(payload = payload, warnings = warnings, errors = errors)
