@@ -62,8 +62,8 @@ class powerplant:
             response.add_error({'UnknownAltitude':'Altitude is outside the range of the engine data.'})
             return response
         
+        # Interpolate to get peak power and sfc for the altitude and temp_dev_isa
         temp_dev_x = np.array([-40, -30, -20, -10, 0, 10, 20, 30])
-
         peak_power_lower = np.interp(sim_data['temp_dev_isa'], temp_dev_x, ENGINE_DATA['peak_power'][alt_lower])
         peak_power_upper = np.interp(sim_data['temp_dev_isa'], temp_dev_x, ENGINE_DATA['peak_power'][alt_upper])
         peak_power = np.interp(sim_data['altitude'], [alt_lower, alt_upper], [peak_power_lower, peak_power_upper]) #kW
@@ -72,12 +72,14 @@ class powerplant:
         sfc_upper = np.interp(sim_data['temp_dev_isa'], temp_dev_x, ENGINE_DATA['sfc'][alt_upper])
         sfc = np.interp(sim_data['altitude'], [alt_lower, alt_upper], [sfc_lower, sfc_upper]) #kg/kWh
 
-        if sim_data['power_required'] > peak_power:
-            response.add_warning({'Overload':'Power required exceeds peak power of the engine.'})
+        # Generate warnings or errors in case of overload
+        if sim_data['power_required']/1000 > peak_power:
+            response.add_warning({'Overload':f'Power required exceeds peak power of the engine: {sim_data["power_required"]/1000:.0f}.'})
         
-        if sim_data['power_required'] > peak_power * ENGINE_OVERLOAD_FACTOR:
+        if sim_data['power_required']/1000 > peak_power * ENGINE_OVERLOAD_FACTOR:
             response.add_error({'Overload':'Power required exceeds peak power of the engine.'})
-        
+
+        # Calculate fuel burn rate and throttle setting
         fuel_burn_rate = sim_data['power_required']/1000 * sfc / 3600 #kg/s
         throttle = sim_data['power_required']/peak_power/1000 * 100
         response.add_payload({'fuel_burn_rate':fuel_burn_rate})
