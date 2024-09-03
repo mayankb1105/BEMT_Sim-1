@@ -60,7 +60,7 @@ class rotorblade:
     # Gives the thrust, drag and moment for a given pitch angle and wind conditions
     # 'msg' is expected to contain horizontal wind component (excluding blade vel) and climb vel,
     #  atmospheric conditions and number of blades
-    def get_performance(self, msg: message.simMessage):
+    def get_performance(self, msg: message.simMessage, get_non_dims = False):
          
         data = msg.get_payload()
 
@@ -93,7 +93,7 @@ class rotorblade:
         ## Relative velocities wrt blade calculations
 
         U_p = lambda_ * data['omega'] * self.radius
-        U_t = data['h_vel'] + data['omega'] * self.radius
+        U_t = data['h_vel'] + data['omega'] * r
         phi = np.arctan(U_p/U_t)
         cos_phi = np.cos(phi)
         sin_phi = np.sin(phi)
@@ -115,15 +115,13 @@ class rotorblade:
         torque = np.trapz(dQ,r)
         power = torque*data['omega']
 
-        non_dims = {}
-        non_dims['CT'] = 2 * thrust * data['number_of_blades'] / (rho * np.pi * self.radius**4 * data['omega']**2)
-        non_dims['sigma'] = data['number_of_blades']*chord[0]*(self.radius-self.root_cutout)/(np.pi*self.radius**2)
-
         response.add_payload({'thrust':thrust, 'torque':torque, 'power':power})
-        response.add_payload({'non_dims':non_dims})
+ 
+        if get_non_dims:
+            non_dims = {}
+            non_dims['CT'] = 2 * thrust * data['number_of_blades'] / (rho * np.pi * self.radius**4 * data['omega']**2)
+            non_dims['sigma'] = data['number_of_blades']*chord[0]*(self.radius-self.root_cutout)/(np.pi*self.radius**2)
+            response.add_payload({'non_dims':non_dims})
+
 
         return response
-        
-             
-                     
-
