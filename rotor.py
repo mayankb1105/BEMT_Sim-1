@@ -29,31 +29,29 @@ class rotor:
 
         input_data = control_msg.get_payload()
 
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # EVALUATING FOR A ROTOR AT 90DEG WITH ZERO WIND. HAS TO BE CHANGED LATER!!!
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        
-        # Blade needs number of blades, omega, tangential wind component, climb velocity,
-        # atmospheric conditions, pitch angle of the blade, 
-        # Calculate the performance of each blade
-        blade_performance = []
-        for blade_number in range(self.number_of_blades):
+        # Evaluate blade performance at every 5 deg of azimuth
+        # Azimuth is zero at the tail, increases anti-clockwise when viewed from above
+        for phi in np.linspace(0, 2*np.pi, 72, endpoint=False):
+             
+            # Blade needs number of blades, omega, tangential wind component, climb velocity,
+            # atmospheric conditions, pitch angle of the blade, 
+            # Calculate the performance of a blade
             blade_conditions = message.simMessage()
             blade_conditions.add_payload({'number_of_blades':self.number_of_blades})
             blade_conditions.add_payload({'omega':self.omega})
-            blade_conditions.add_payload({'h_vel':0})                                # Would be calculated from headwind and crosswind later
+            blade_conditions.add_payload({'tangential_vel': input_data['headwind'] * np.sin(phi) + input_data['crosswind'] * np.cos(phi)}) # Tangential wind component
             blade_conditions.add_payload({'climb_vel': input_data['climb_vel']})
             blade_conditions.add_payload({'atmosphere': input_data['atmosphere']})
             blade_conditions.add_payload({'pitch': input_data['collective']}) # Would be calculated from collective and cyclic later
 
-            # Add the performance of this blade to our list
-            ###!!!!!! This is being done at a single point. Should be done at every 5 degrees later
-            blade_performance.append(self.blade.get_performance(blade_conditions).get_payload())
+                # Add the performance of this blade to our list
+                ###!!!!!! This is being done at a single point. Should be done at every 5 degrees later
+            blade_performance = self.blade.get_performance(blade_conditions).get_payload()
 
         # Calculate the total performance of the rotor
-        thrust = sum([blade['thrust'] for blade in blade_performance])
-        power = sum([blade['power'] for blade in blade_performance])
-        torque = sum([blade['torque'] for blade in blade_performance])
+        thrust = self.number_of_blades * blade_performance["thrust"]
+        power = self.number_of_blades * blade_performance["power"]
+        torque = self.number_of_blades * blade_performance["torque"]
 
         response = message.simMessage()
         response.add_payload({'thrust': thrust, 'power': power, 'torque': torque})

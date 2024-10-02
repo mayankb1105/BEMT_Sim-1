@@ -29,6 +29,8 @@ class rotorblade:
             self.x_twist = np.array(raw_data["x_twist"])
             self.twist = np.array(raw_data["twist"])
 
+            self.mmoi = raw_data['MMOI']
+
     def get_chord(self, radius: np.ndarray):
          
         if np.any(radius < self.root_cutout) or np.any(radius > self.radius):
@@ -91,9 +93,8 @@ class rotorblade:
             response.add_warning({'TipLoss':'Prandtl tip loss factor did not converge.'})
 
         ## Relative velocities wrt blade calculations
-
         U_p = lambda_ * data['omega'] * self.radius
-        U_t = data['h_vel'] + data['omega'] * r
+        U_t = data['tangential_vel'] + data['omega'] * r
         phi = np.arctan(U_p/U_t)
         cos_phi = np.cos(phi)
         sin_phi = np.sin(phi)
