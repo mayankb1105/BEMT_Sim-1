@@ -94,12 +94,11 @@ class rotorblade:
 
         ## Relative velocities wrt blade calculations
         U_p = lambda_ * data['omega'] * self.radius
-        U_t = data['tangential_vel'] + data['omega'] * r
+        U_t = data['omega'] * r
         phi = np.arctan(U_p/U_t)
         cos_phi = np.cos(phi)
         sin_phi = np.sin(phi)
 
-        airfoil_performance = self.airfoil.get_performance(theta - phi).get_payload()
         airfoil_performance = self.airfoil.get_performance(theta - phi).get_payload()
         CL = airfoil_performance['CL']
         CD = airfoil_performance['CD']
@@ -124,5 +123,54 @@ class rotorblade:
             non_dims['sigma'] = data['number_of_blades']*chord[0]*(self.radius-self.root_cutout)/(np.pi*self.radius**2)
             response.add_payload({'non_dims':non_dims})
 
+
+        return response
+    
+    def get_performance_forward_flight(self, msg: message.simMessage):
+         
+        data = msg.get_payload()
+
+        response = message.simMessage()
+        
+        r = np.linspace(self.root_cutout,self.radius*(1 - TIP_CUTOUT_FACTOR),N_INTEGRATION_BLADE)
+        chord = self.get_chord(r).get_payload()['chord']
+        twist = self.get_twist(r).get_payload()['twist']
+        theta = data['pitch'] + twist
+
+        lambda_i = data['lambda_i_Glauert'] * ( 1 + data['variable_inflow_coefficient'] * r / self.radius )
+        U_p = data['V_inf'] * data['alpha_tpp'][0] + lambda_i * data['omega'] * self.radius + 0 + data['V_inf'] * np.sin(data['beta_0']) * np.cos(data['phi'])
+        U_t = data['omega'] * r + data['V_inf'] * np.cos(data['alpha_tpp'][0]) * np.cos(data['phi'])
+
+        airfoil_performance = self.airfoil.get_performance(theta - np.arctan(U_p/U_t)).get_payload()
+        CL = airfoil_performance['CL']
+        CD = airfoil_performance['CD']
+        CM = airfoil_performance['CM']
+
+        rho = data['atmosphere']['density']
+        cos_phi = np.cos(np.arctan(U_p/U_t))
+        sin_phi = np.sin(np.arctan(U_p/U_t))
+
+        # Refer to the diagram in dynamics.py for the coordinate system
+
+        dFz = 0.5*rho*(U_p**2 + U_t**2)*chord*(CL*cos_phi - CD*sin_phi)
+        dFtheta = -r*0.5*rho*(U_p**2 + U_t**2)*chord*(CD*cos_phi + CL*sin_phi) # Tangential force. Minus sign becuase it is in the opposite direction
+
+        Ftheta = np.trapz(dFtheta,r)
+        Fx = Ftheta*np.cos(data['phi'])
+        Fy = Ftheta*np.sin(data['phi'])
+        Fz = np.trapz(dFz,r)
+        F = np.array([Fx,Fy,Fz])
+
+        Mx = np.trapz(dFz*r,r)*np.cos(data['phi'])  # Pitch up moment is positive
+        # dMy needs a minus because position vector is in x-dir and Force vector is in z-dir. Moment is rxF so ixk = -j
+        My = np.trapz(-dFz*r*np.sin(data['phi']),r)  # Roll right moment is positive
+        Mz = np.trapz(dFtheta*r,r)
+        M = np.array([Mx,My,Mz])
+        
+        thrust = Fz
+        torque = -Mz     # Minus because applied torque is in opposite direction
+        power = torque*data['omega']
+
+        response.add_payload({'thrust':thrust, 'torque':torque, 'power':power, 'forces':F, 'moments':M})
 
         return response

@@ -4,6 +4,7 @@ import json
 ###### ENVIRONMENT VARIABLES ######
 
 N_INTEGRATION_BLADE = 100
+N_INTEGRATION_AZIMUTH = 72
 TIP_CUTOUT_FACTOR = 1e-6  # to prevent problems with the prandtl tip loss factor
 PRANDTL_TIPLOSS_ITERATIONS = 10
 PRANDTL_TIPLOSS_TOLERANCE = 1e-6

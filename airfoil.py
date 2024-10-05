@@ -30,8 +30,7 @@ class airfoil:
 
         if np.any(alpha < self.alpha[0]) or np.any(alpha > self.alpha[-1]):
             response = message.simMessage()
-            response.add_error({'UnknownAlpha':'AoA is outside the range of the airfoil data.'})
-            return response
+            response.add_error({'UnknownAlpha':f'AoA is outside the range of the airfoil data: {alpha.min()*180/np.pi} deg'})
 
         response = message.simMessage()
 
