@@ -12,7 +12,8 @@ from __init__ import *
 
 class simMessage:
 
-    
+    warnings_suprressed = False
+    errors_suprressed = False    
 
     def __init__ (self, **kwargs):
 
