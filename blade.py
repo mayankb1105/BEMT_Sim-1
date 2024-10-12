@@ -174,3 +174,81 @@ class rotorblade:
         response.add_payload({'thrust':thrust, 'torque':torque, 'power':power, 'forces':F, 'moments':M})
 
         return response
+    
+    def get_performance_forward_flight_2(self, msg: message.simMessage):
+         
+        data = msg.get_payload()
+
+        response = message.simMessage()
+        
+        r = np.linspace(self.root_cutout,self.radius*(1 - TIP_CUTOUT_FACTOR),N_INTEGRATION_BLADE)
+        chord = self.get_chord(r).get_payload()['chord']
+        twist = self.get_twist(r).get_payload()['twist']
+        theta = data['pitch'] + twist
+        thrust=0
+        torque=0
+        power=0
+        F=0
+        M=0
+        converged = False
+        beta=0
+        for i in range(THRUST_CONVERGENCE_ITERATIONS):
+            thrust_=thrust
+            mu = data['V_inf']*np.cos(data['alpha_tpp'][0]) / (data['omega'] * self.radius)
+            C_T = thrust / (data['atmosphere']['density'] / np.pi * (self.radius**2-self.root_cutout**2) * (data['omega']**2) * self.radius**2)
+            lambda_i_Glauert = C_T/2/mu
+            lambda_G = data['V_inf'] / mu*np.tan(data['alpha_tpp'][0])#(data['omega'] * self.radius) + lambda_i_Glauert
+            variable_inflow_coefficient = (4/3*mu/lambda_G)/(1.2+mu/lambda_G)
+            lambda_i = lambda_i_Glauert * ( 1 + variable_inflow_coefficient *np.cos(data['phi'])* r / self.radius )
+            U_p = data['V_inf'] * np.sin(data['alpha_tpp'][0]) + lambda_i * data['omega'] * self.radius + 0 + data['V_inf'] * np.sin(beta) * np.cos(data['phi'])
+            U_t = data['omega'] * r + data['V_inf'] * np.cos(data['alpha_tpp'][0]) * np.sin(data['phi'])
+
+            airfoil_performance = self.airfoil.get_performance(theta - np.arctan(U_p/U_t)).get_payload()
+            #print('alpha',np.mean(theta - np.arctan(U_p/U_t)),'Up',np.mean(U_p),'Ut',np.mean(U_t))
+            CL = airfoil_performance['CL']
+            CD = airfoil_performance['CD']
+            CM = airfoil_performance['CM']
+            #print('CL',np.mean(CL))
+            rho = data['atmosphere']['density']
+            cos_phi = np.cos(np.arctan(U_p/U_t))
+            sin_phi = np.sin(np.arctan(U_p/U_t))
+
+            # Refer to the diagram in dynamics.py for the coordinate system
+            dL = 0.5*rho*(U_p**2 + U_t**2)*chord*CL
+            dFz = 0.5*rho*(U_p**2 + U_t**2)*chord*(CL*cos_phi - CD*sin_phi)
+            dFtheta = -r*0.5*rho*(U_p**2 + U_t**2)*chord*(CD*cos_phi + CL*sin_phi) # Tangential force. Minus sign becuase it is in the opposite direction
+
+            Ftheta = np.trapz(dFtheta,r)
+            Fx = Ftheta*np.cos(data['phi'])
+            Fy = Ftheta*np.sin(data['phi'])
+            Fz = np.trapz(dFz,r)
+            F = np.array([Fx,Fy,Fz])
+
+            Mx = np.trapz(dFz*r,r)*np.cos(data['phi'])  # Pitch up moment is positive
+            # dMy needs a minus because position vector is in x-dir and Force vector is in z-dir. Moment is rxF so ixk = -j
+            My = np.trapz(-dFz*r*np.sin(data['phi']),r)  # Roll right moment is positive
+            Mz = np.trapz(dFtheta*r,r)
+            M = np.array([Mx,My,Mz])
+        
+            thrust = Fz
+            torque = -Mz     # Minus because applied torque is in opposite direction
+            power = torque*data['omega']
+            L=np.trapz(dL,r)
+            beta=L/self.mmoi/data['omega']**2
+            #print('psi',data['phi'],'lambda_i',np.mean(lambda_i),'thrust',thrust,'beta',beta,'delta_thrust',(thrust-thrust_)/1e-6,'mu',mu)
+            if np.allclose(thrust_,thrust,rtol=THRUST_CONVERGENCE_TOLERANCE):
+                converged = True
+                break
+        
+        if not converged:
+            response.add_warning({'Lift Convergence':'Lift did not converge.'})
+            thrust=0
+            print(data['phi'])
+            #torque=0
+            #power=0
+            #F=np.array([0,0,0])
+            #M=np.array([0,0,0])
+
+        response.add_payload({'thrust':thrust, 'torque':torque, 'power':power, 'forces':F, 'moments':M})
+
+        return response

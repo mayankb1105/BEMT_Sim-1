@@ -1,0 +1,3 @@
+{"temp_dev_isa":0,
+ "flight_segments":[{"type":"forward_flight","cyclic_c":0,"cyclic_s":0,"collective":0,"altitude":0,
+                    "temp_dev_isa":0,"headwind":0,"crosswind":0,"climb_vel":0,"V_inf":20,"beta_0":0.02}]}
