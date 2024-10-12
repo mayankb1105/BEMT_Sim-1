@@ -44,10 +44,10 @@ class FBD:
             fbd_data = json.load( fbd_data_file )
 
         self.mass = fbd_data['mass']
-        self.mr_position = np.array( fbd_data['mr_position'] )
-        self.tr_position = np.array( fbd_data['tr_position'] )
-        self.cg_position = np.array( fbd_data['cg_position'] )
-        self.gravity = np.array( fbd_data['gravity'] )
+        self.mr_position = np.array( [fbd_data['mr_position']] )
+        self.tr_position = np.array( [fbd_data['tr_position']])
+        self.cg_position = np.array( [fbd_data['cg_position']] )
+        self.gravity = np.array( [fbd_data['gravity']] )
 
     def get_mr_position( self ):
         return self.mr_position
