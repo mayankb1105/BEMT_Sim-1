@@ -62,7 +62,8 @@ class forward_flight(maneuver):
 
         # Calculate the thrust required by the tail rotor to match the torque of the main rotor
         # !!! In the future, offload this to the fbd class ////////////////////////////
-        tail_rotor_thrust = main_rotor_performance['torque'] / (vehicle_state['fbd'].get_tr_position()[0] - vehicle_state['fbd'].get_cg_position()[0])
+        tail_rotor_thrust = np.abs(main_rotor_performance['torque'] / (vehicle_state['fbd'].get_tr_position()[1] - vehicle_state['fbd'].get_cg_position()[1]))
+        print(main_rotor_performance(['torque']))
         # /////////////////////////////////////////////////////////////////////////////
 
         # Calculate the power consumed by the tail rotor to match the torque of the main rotor

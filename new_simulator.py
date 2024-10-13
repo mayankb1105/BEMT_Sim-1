@@ -13,7 +13,7 @@ from New_dummy_data import SimulationData            # Importing dummy data deve
 
 root = tk.Tk()                                       # Creating the main window for the application
 """ Change SimulationData() class to your respective class """
-sim_data = SimulationData('input_files/heli.json','input_files/fbd.json',20,0.02)                          # Creating an instance of the SimulationData class
+sim_data = SimulationData('input_files/heli.json','input_files/fbd.json',13.89,0.002,2000)                          # Creating an instance of the SimulationData class
 plots_data = {}                                      # Initialize a dictionary to store data for the plots
 graph_var1 = tk.StringVar(value="Forces X")          # Creating a StringVar to hold the selected graph type for the first plot
 graph_var2 = tk.StringVar(value="Moments X")         # Creating a StringVar to hold the selected graph type for the second plot

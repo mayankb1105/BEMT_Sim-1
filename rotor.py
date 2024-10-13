@@ -78,7 +78,7 @@ class rotor:
         alpha_tpp_s = np.arctan(input_data['lateral_force']/input_data['thrust'])
         # Forward alpha_tpp comes from both rotor tilt due to drag and climb velocity
         alpha_tpp_c = np.arctan(input_data['climb_vel']/input_data['V_inf']) \
-                    + np.arctan(input_data['mass']*g/input_data['total_drag'])
+                    + np.arctan(input_data['total_drag']/input_data['mass']*g)
 
         # mu has to be greater than 0.2 for this to be valid
         if mu < 0.2:
