@@ -153,7 +153,7 @@ class rotorblade:
         # Refer to the diagram in dynamics.py for the coordinate system
 
         dFz = 0.5*rho*(U_p**2 + U_t**2)*chord*(CL*cos_phi - CD*sin_phi)
-        dFtheta = -r*0.5*rho*(U_p**2 + U_t**2)*chord*(CD*cos_phi + CL*sin_phi) # Tangential force. Minus sign becuase it is in the opposite direction
+        dFtheta = -0.5*rho*(U_p**2 + U_t**2)*chord*(CD*cos_phi + CL*sin_phi) # Tangential force. Minus sign becuase it is in the opposite direction
 
         Ftheta = np.trapz(dFtheta,r)
         Fx = Ftheta*np.cos(data['phi'])
