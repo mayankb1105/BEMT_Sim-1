@@ -1,6 +1,6 @@
 {"main_rotor_path":"input_files/main_rotor.json",
  "tail_rotor_path":"input_files/tail_rotor.json",
- "dry_mass":200,
+ "dry_mass":10,
  "payload_mass":0,
- "fuel_mass":0,
- "flat_plate_area":0.3}
+ "fuel_mass":50,
+ "flat_plate_area":0.1}
