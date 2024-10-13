@@ -139,7 +139,7 @@ class rotorblade:
 
         lambda_i = data['lambda_i_Glauert'] * ( 1 + data['variable_inflow_coefficient'] * r / self.radius )
         U_p = data['V_inf'] * data['alpha_tpp'][0] + lambda_i * data['omega'] * self.radius + 0 + data['V_inf'] * np.sin(data['beta_0']) * np.cos(data['phi'])
-        U_t = data['omega'] * r + data['V_inf'] * np.cos(data['alpha_tpp'][0]) * np.cos(data['phi'])
+        U_t = data['omega'] * r + data['V_inf'] * np.cos(data['alpha_tpp'][0]) * np.sin(data['phi'])
 
         airfoil_performance = self.airfoil.get_performance(theta - np.arctan(U_p/U_t)).get_payload()
         CL = airfoil_performance['CL']
