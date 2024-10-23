@@ -195,13 +195,16 @@ class rotorblade:
         for i in range(THRUST_CONVERGENCE_ITERATIONS):
             thrust_=thrust
             mu = data['V_inf']*np.cos(data['alpha_tpp'][0]) / (data['omega'] * self.radius)
+            #print(thrust,thrust_)
             C_T = thrust / (data['atmosphere']['density'] / np.pi * (self.radius**2-self.root_cutout**2) * (data['omega']**2) * self.radius**2)
-            lambda_i_Glauert = C_T/2/mu
+            #lambda_i_Glauert = C_T/2/mu
+            #print([mu,data['alpha_tpp'][0],C_T])
+            lambda_i_Glauert = fsolve(Ct,0.1,args=[mu,data['alpha_tpp'][0],C_T])[0]
             lambda_G = data['V_inf'] / mu*np.tan(data['alpha_tpp'][0])#(data['omega'] * self.radius) + lambda_i_Glauert
             variable_inflow_coefficient = (4/3*mu/lambda_G)/(1.2+mu/lambda_G)
-            lambda_i = lambda_i_Glauert * ( 1 + variable_inflow_coefficient *np.cos(data['phi'])* r / self.radius )
-            U_p = data['V_inf'] * np.sin(data['alpha_tpp'][0]) + lambda_i * data['omega'] * self.radius + 0 + data['V_inf'] * np.sin(beta) * np.cos(data['phi'])
-            U_t = data['omega'] * r + data['V_inf'] * np.cos(data['alpha_tpp'][0]) * np.sin(data['phi'])
+            lambda_i = lambda_i_Glauert * ( 1 + variable_inflow_coefficient *np.cos(data['psi'])* r / self.radius )
+            U_p = data['V_inf'] * np.sin(data['alpha_tpp'][0]) + lambda_i * data['omega'] * self.radius + 0 + data['V_inf'] * np.sin(beta) * np.cos(data['psi'])
+            U_t = data['omega'] * r + data['V_inf'] * np.cos(data['alpha_tpp'][0]) * np.sin(data['psi'])
 
             airfoil_performance = self.airfoil.get_performance(theta - np.arctan(U_p/U_t)).get_payload()
             #print('alpha',np.mean(theta - np.arctan(U_p/U_t)),'Up',np.mean(U_p),'Ut',np.mean(U_t))
@@ -216,17 +219,17 @@ class rotorblade:
             # Refer to the diagram in dynamics.py for the coordinate system
             dL = 0.5*rho*(U_p**2 + U_t**2)*chord*CL
             dFz = 0.5*rho*(U_p**2 + U_t**2)*chord*(CL*cos_phi - CD*sin_phi)
-            dFtheta = -r*0.5*rho*(U_p**2 + U_t**2)*chord*(CD*cos_phi + CL*sin_phi) # Tangential force. Minus sign becuase it is in the opposite direction
+            dFtheta = 0.5*rho*(U_p**2 + U_t**2)*chord*(CD*cos_phi + CL*sin_phi) # Tangential force. Minus sign becuase it is in the opposite direction
 
             Ftheta = np.trapz(dFtheta,r)
-            Fx = Ftheta*np.cos(data['phi'])
-            Fy = Ftheta*np.sin(data['phi'])
+            Fx = -Ftheta*np.cos(data['psi'])
+            Fy = -Ftheta*np.sin(data['psi'])
             Fz = np.trapz(dFz,r)
             F = np.array([Fx,Fy,Fz])
 
-            Mx = np.trapz(dFz*r,r)*np.cos(data['phi'])  # Pitch up moment is positive
+            Mx = np.trapz(dFz*r,r)*np.cos(data['psi'])  # Pitch up moment is positive
             # dMy needs a minus because position vector is in x-dir and Force vector is in z-dir. Moment is rxF so ixk = -j
-            My = np.trapz(-dFz*r*np.sin(data['phi']),r)  # Roll right moment is positive
+            My = np.trapz(-dFz*r*np.sin(data['psi']),r)  # Roll right moment is positive
             Mz = np.trapz(dFtheta*r,r)
             M = np.array([Mx,My,Mz])
         
@@ -235,20 +238,30 @@ class rotorblade:
             power = torque*data['omega']
             L=np.trapz(dL,r)
             beta=L/self.mmoi/data['omega']**2
-            #print('psi',data['phi'],'lambda_i',np.mean(lambda_i),'thrust',thrust,'beta',beta,'delta_thrust',(thrust-thrust_)/1e-6,'mu',mu)
-            if np.allclose(thrust_,thrust,rtol=THRUST_CONVERGENCE_TOLERANCE):
+            #print(thrust,thrust_,'1')
+            #print('psi',data['phi'],'lambda_i',np.mean(lambda_i),'thrust',thrust,'beta',beta,'delta_thrust',(thrust-thrust_),'mu',mu)
+            if np.allclose(thrust_,thrust,atol=THRUST_CONVERGENCE_TOLERANCE):
+            #if L/self.mmoi/data['omega']**2<beta:
                 converged = True
+                #print('psi',data['phi'],'lambda_i',np.mean(lambda_i),'thrust',thrust,'beta',beta,'mu',mu,
+                #      'alpha',np.min(theta - np.arctan(U_p/U_t)),np.max(theta - np.arctan(U_p/U_t)),'Ct',C_T,
+                #      'alpha_tpp',data['alpha_tpp'],'Lambda_i_Glauert',lambda_i_Glauert)
                 break
         
         if not converged:
-            response.add_warning({'Lift Convergence':'Lift did not converge.'})
-            thrust=0
-            print(data['phi'])
+            psi=data['psi']
+            response.add_warning({'Lift Convergence': f'Lift did not converge at psi= :{psi*180/np.pi} degrees'})
+            #thrust=0
+            #print(data['phi'])
             #torque=0
             #power=0
             #F=np.array([0,0,0])
             #M=np.array([0,0,0])
 
-        response.add_payload({'thrust':thrust, 'torque':torque, 'power':power, 'forces':F, 'moments':M})
+        response.add_payload({'thrust':thrust, 'torque':torque, 'power':power, 'forces':F, 'moments':M,'beta':beta})
 
         return response
+
+#function to find lambda_i_Glauert using fsolve
+def Ct(lambda_i,arr):#arr=[mu,alpha_tpp,Ct]
+    return 2*lambda_i*(arr[0]**2+(arr[0]*np.tan(arr[1])+lambda_i)**2)**0.5-arr[2]

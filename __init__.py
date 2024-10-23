@@ -1,5 +1,7 @@
 import numpy as np
 import json
+from scipy.optimize import fsolve
+import matplotlib.pyplot as plt
 
 ###### ENVIRONMENT VARIABLES ######
 
@@ -9,8 +11,10 @@ TIP_CUTOUT_FACTOR = 1e-6  # to prevent problems with the prandtl tip loss factor
 PRANDTL_TIPLOSS_ITERATIONS = 10
 PRANDTL_TIPLOSS_TOLERANCE = 1e-6
 
-THRUST_CONVERGENCE_ITERATIONS = 15
-THRUST_CONVERGENCE_TOLERANCE = 1e-6
+THRUST_CONVERGENCE_ITERATIONS = 50
+THRUST_CONVERGENCE_TOLERANCE = 0.005
+
+BETA_TOLERANCE=0.0005
 
 ENGINE_CEILING_TOLERANCE = 500 #m
 ENGINE_OVERLOAD_FACTOR = 1.1
@@ -21,6 +25,7 @@ CONTROLS_CONVERGENCE_ITERATIONS = 15 # 12 should be the max iterations it should
 
 g = 9.81 #m/s^2
 rho_air=1.225 #kg/m^3
+pi=np.pi
 
 import time
 import message
