@@ -58,6 +58,6 @@ class airfoil:
             response.add_warning({'Stall':f'Critical AoA exceeded at {alpha.max()*180/np.pi} deg.'})
 
         if np.any(alpha > 1.57255) and np.any(alpha < 3.1415):
-            response.add_warning({'Reverse Flow'})
+            response.add_warning({'Reverse Flow':'Reverse Flow'})
 
         return response
