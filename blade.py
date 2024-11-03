@@ -138,10 +138,15 @@ class rotorblade:
         theta = data['pitch'] + twist
 
         lambda_i = data['lambda_i_Glauert'] * ( 1 + data['variable_inflow_coefficient'] * r / self.radius )
-        U_p = data['V_inf'] * data['alpha_tpp'][0] + lambda_i * data['omega'] * self.radius + 0 + data['V_inf'] * np.sin(data['beta_0']) * np.cos(data['phi'])
+        U_p = data['V_inf'] * np.sin(data['alpha_tpp'][0]) + \
+              lambda_i * data['omega'] * self.radius + \
+              0 + \
+              data['V_inf'] * np.sin(data['beta_0']) * np.cos(data['phi']) +\
+              data['climb_vel'] * np.cos(data['alpha_tpp'][0]) * np.cos(data['alpha_tpp'][1])
+        
         U_t = data['omega'] * r + data['V_inf'] * np.cos(data['alpha_tpp'][0]) * np.sin(data['phi'])
 
-        airfoil_performance = self.airfoil.get_performance(theta - np.arctan(U_p/U_t)).get_payload()
+        airfoil_performance = self.airfoil.get_performance(theta - np.arctan(U_p/U_t)).get_payload(suppress_warnings=True)
         CL = airfoil_performance['CL']
         CD = airfoil_performance['CD']
         CM = airfoil_performance['CM']
@@ -161,9 +166,10 @@ class rotorblade:
         Fz = np.trapz(dFz,r)
         F = np.array([Fx,Fy,Fz])
 
-        Mx = np.trapz(dFz*r,r)*np.cos(data['phi'])  # Pitch up moment is positive
+        Mconing = np.trapz(dFz*r,r) - self.mmoi * ( data['omega'] ** 2 ) * np.sin(data['beta_0']) # Coning moment by lift force and centrifugal force
+        Mx = Mconing * np.cos(data['phi'])  # Pitch up moment is positive
         # dMy needs a minus because position vector is in x-dir and Force vector is in z-dir. Moment is rxF so ixk = -j
-        My = np.trapz(-dFz*r*np.sin(data['phi']),r)  # Roll right moment is positive
+        My = -Mconing * np.sin(data['phi'])  # Roll right moment is positive
         Mz = np.trapz(dFtheta*r,r)
         M = np.array([Mx,My,Mz])
         
@@ -171,7 +177,7 @@ class rotorblade:
         torque = -Mz     # Minus because applied torque is in opposite direction
         power = torque*data['omega']
 
-        response.add_payload({'thrust':thrust, 'torque':torque, 'power':power, 'forces':F, 'moments':M})
+        response.add_payload({'thrust':thrust, 'torque':torque, 'power':power, 'forces':F, 'moments':M, 'coning_moment':Mconing})
 
         return response
     

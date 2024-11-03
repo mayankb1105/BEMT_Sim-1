@@ -31,7 +31,7 @@ class airfoil:
 
         if (np.any(alpha < self.alpha[0]) or np.any(alpha > self.alpha[-1])) and (np.any(alpha > self.alpha_reverse[0]) or np.any(alpha < self.alpha_reverse[-1])):
             response = message.simMessage()
-            response.add_error({'UnknownAlpha':f'AoA is outside the range of the airfoil data: {alpha.min()*180/np.pi} deg'})
+            response.add_error({'UnknownAlpha':f'AoA is outside the range of the airfoil data: {alpha.min()*180/np.pi:.1f} deg'})
 
         response = message.simMessage()
 
@@ -55,7 +55,7 @@ class airfoil:
             response.add_payload({'CM':CM_value})
 
         if np.any(alpha > self.alphacrit):
-            response.add_warning({'Stall':f'Critical AoA exceeded at {alpha.max()*180/np.pi} deg.'})
+            response.add_warning({'Stall':f'Critical AoA exceeded at {alpha.max()*180/np.pi:.1f} deg.'})
 
         if np.any(alpha > 1.57255) and np.any(alpha < 3.1415):
             response.add_warning({'Reverse Flow':'Reverse Flow'})

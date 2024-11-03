@@ -1,0 +1,25 @@
+{
+    "temp_dev_isa": "1",
+    "mission_phases": [
+        {
+            "type": "Hover",
+            "mass": "20",
+            "fuel": "20",
+            "altitude": "20",
+            "V_inf": "",
+            "time_taken": "20",
+            "distance_traveled": "",
+            "altitude_change": ""
+        },
+        {
+            "type": "Forward Flight",
+            "mass": "20",
+            "fuel": "20",
+            "altitude": "20",
+            "V_inf": "20",
+            "time_taken": "",
+            "distance_traveled": "20",
+            "altitude_change": "2"
+        }
+    ]
+}

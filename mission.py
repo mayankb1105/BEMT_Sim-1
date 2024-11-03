@@ -18,7 +18,7 @@ class mission:
             raw_data = json.load(file)
 
         self.temp_dev_isa = np.array(raw_data["temp_dev_isa"])
-        self.flight_segments = maneuver.create_maneuvers(raw_data["flight_segments"])
+        self.flight_segments = maneuver.create_maneuvers(raw_data["mission_phases"])
 
     def endurance(self):
         fbd=dynamics.FBD(self.fbd_file_path)
@@ -30,5 +30,4 @@ class mission:
 
 mis=mission("input_files/mission.json","input_files/heli.json","input_files/fbd.json")
 mis.read_mission_data()
-mis.endurance()
 print(mis.flight_segments)
