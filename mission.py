@@ -36,14 +36,14 @@ mis=mission("input_files/mission_data.json","input_files/heli.json","input_files
 mis.read_mission_data()
 
 timestamp = [0]
-gross_weight = [0]
-fuel_weight = [0]
+gross_weight = [mis.flight_segments[0].dry_mass + mis.fuel_mass]
+fuel_weight = [mis.fuel_mass]
 fuel_burn_rate = [0]
-altitude = [0]
+altitude = [mis.flight_segments[0].altitude]
 power_required = [0]
 power_available = [0]
-airspeed = [0]
-climb_rate = [0]
+airspeed = [mis.flight_segments[0].parameters['V_inf']]
+climb_rate = [mis.flight_segments[0].parameters['climb_vel']]
 distance_covered = [0]
 
 
@@ -80,7 +80,7 @@ for segment in mis.flight_segments:
         power_available.append(result['power_available'])
         airspeed.append(segment.parameters['V_inf'])
         climb_rate.append(segment.parameters['climb_vel'])
-        distance_covered.append(distance_covered[-1] + segment.parameters['V_inf']*60)
+        distance_covered.append(distance_covered[-1] + segment.parameters['V_inf']*60) # Headwind is now availble in segment parameters ADD ITTTTT!!!!!
 
     segments_done += 1
     print(f"segment {segments_done} of {len(mis.flight_segments)} completed")
