@@ -255,7 +255,7 @@ class rotor:
         # Bisection method to find the collective required to maintain hover
         for i in range(CONTROLS_CONVERGENCE_ITERATIONS):
 
-            rotor_performance = self.get_performance(message.simMessage(payload = {'collective': collective,**conditions,'atmosphere':conditions['atmosphere']})).get_payload()
+            rotor_performance = self.get_performance(message.simMessage(payload = {'collective': collective,**conditions,'atmosphere':conditions['atmosphere'],'climb_vel':conditions['climb_vel']})).get_payload()
             if rotor_performance['thrust'] > conditions['desired_thrust']:
                 collective_upper = collective
                 collective = (collective + collective_lower)/2
@@ -354,7 +354,7 @@ class rotor:
                                         'cyclic_s': cyclic_s,
                                         'beta_0': beta_0 })
                 
-                mr_performance = self.get_performance_forward_flight(controls).get_payload()
+                mr_performance = self.get_performance_forward_flight(controls).get_payload(suppress_warnings=True)
                 if np.linalg.norm(mr_performance['thrust'] * np.cos(tpp_angle[0]) * np.cos(tpp_angle[1]) * np.array([np.tan(tpp_angle[1]), np.tan(tpp_angle[0]), 1]) - F_desired) < ACCELERATION_TOLERANCE * conditions['mass'] and \
                 np.linalg.norm((mr_performance['moments'] - M_desired)[:2]) < ACCELERATION_TOLERANCE*self.blade.radius:
                     break
@@ -485,11 +485,11 @@ class rotor:
         response = message.simMessage()
 
         guess = initial_guess
-        delta = 0.05*np.pi/180
+        delta = 1*np.pi/180
         
         # Initialising the first step for solution
         conditions.add_payload({control: guess})
-        rotor_performance = self.get_performance_forward_flight(conditions).get_payload()
+        rotor_performance = self.get_performance_forward_flight(conditions).get_payload(suppress_warnings=True)
         output_value_prev = rotor_performance[output]
         if output_index is not None:
             output_value_prev = output_value_prev[output_index]
@@ -497,9 +497,9 @@ class rotor:
         # Solution convergence loop
         for i in range(CONTROLS_CONVERGENCE_ITERATIONS):
 
-            guess += delta
+            guess += delta if abs(delta) < 1*np.pi/180 else 1*np.pi/180*delta/abs(delta) # not more than 1 degree at a time
             conditions.add_payload({control: guess})
-            rotor_performance = self.get_performance_forward_flight(conditions).get_payload()
+            rotor_performance = self.get_performance_forward_flight(conditions).get_payload(suppress_warnings=True)
             output_value = rotor_performance[output]
             if output_index is not None:
                 output_value = output_value[output_index]

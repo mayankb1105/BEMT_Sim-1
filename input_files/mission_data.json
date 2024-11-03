@@ -1,0 +1,96 @@
+{
+    "temp_dev_isa": 0.0,
+    "fuel_mass": 50.0,
+    "mission_phases": [
+        {
+            "type": "Climb",
+            "mass": 150.0,
+            "altitude": 2000.0,
+            "V_inf": 0,
+            "time_taken": 20.0,
+            "distance_traveled": 0,
+            "altitude_change": 20.0,
+            "climb_vel": 1.0
+        },
+        {
+            "type": "Forward Flight",
+            "mass": 150.0,
+            "altitude": 2020.0,
+            "V_inf": 14.0,
+            "time_taken": 320.0,
+            "distance_traveled": 4480.0,
+            "altitude_change": 480.0,
+            "climb_vel": 1.5
+        },
+        {
+            "type": "Forward Flight",
+            "mass": 150.0,
+            "altitude": 2500.0,
+            "V_inf": 14.0,
+            "time_taken": 1071.4285714285713,
+            "distance_traveled": 15000.0,
+            "altitude_change": 0.0,
+            "climb_vel": 0.0
+        },
+        {
+            "type": "Forward Flight",
+            "mass": 150.0,
+            "altitude": 2400.0,
+            "V_inf": 14.0,
+            "time_taken": 133.28571428571428,
+            "distance_traveled": 1866.0,
+            "altitude_change": -200.0,
+            "climb_vel": 1.5005359056806002
+        },
+        {
+            "type": "Hover",
+            "mass": 150.0,
+            "altitude": 2300.0,
+            "V_inf": 0,
+            "time_taken": 60.0,
+            "distance_traveled": 0,
+            "altitude_change": 0,
+            "climb_vel": 0
+        },
+        {
+            "type": "Climb",
+            "mass": 100.0,
+            "altitude": 2300.0,
+            "V_inf": 0,
+            "time_taken": 10.0,
+            "distance_traveled": 0,
+            "altitude_change": 10.0,
+            "climb_vel": 1.0
+        },
+        {
+            "type": "Forward Flight",
+            "mass": 100.0,
+            "altitude": 2400.0,
+            "V_inf": 14.0,
+            "time_taken": 133.28571428571428,
+            "distance_traveled": 1866.0,
+            "altitude_change": 200.0,
+            "climb_vel": 1.5005359056806002
+        },
+        {
+            "type": "Forward Flight",
+            "mass": 100.0,
+            "altitude": 2500.0,
+            "V_inf": 14.0,
+            "time_taken": 1071.4285714285713,
+            "distance_traveled": 15000.0,
+            "altitude_change": 0.0,
+            "climb_vel": 0.0
+        },
+        {
+            "type": "Forward Flight",
+            "mass": 100.0,
+            "altitude": 2250.0,
+            "V_inf": 14.0,
+            "time_taken": 320.0,
+            "distance_traveled": 4480.0,
+            "altitude_change": -480.0,
+            "climb_vel": 1.5
+        }
+    ]
+}

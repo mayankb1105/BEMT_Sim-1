@@ -37,7 +37,7 @@ ENGINE_DATA = {
 
 class powerplant:
 
-    def __init__(self, powerplant_data_file):
+    def __init__(self):
             
             pass
 
@@ -84,5 +84,6 @@ class powerplant:
         throttle = sim_data['power_required']/peak_power/1000 * 100
         response.add_payload({'fuel_burn_rate':fuel_burn_rate})
         response.add_payload({'throttle':throttle})
+        response.add_payload({'power_available':peak_power})
 
         return response

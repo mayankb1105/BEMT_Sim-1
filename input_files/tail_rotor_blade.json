@@ -1,6 +1,6 @@
 {"airfoil_data_file_path": "input_files/flat_airfoil.json",
  "radius": 0.5,
- "root_cutout": 0.125,
+ "root_cutout": 0.07,
  "x_twist": [0, 1],
  "twist": [0, 0],
  "x_chord": [0, 1],

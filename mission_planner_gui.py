@@ -170,7 +170,7 @@ class MainWindow:
             elif mission["type"] == "Forward Flight":
                 detail += f", Distance Traveled={mission['distance_traveled']} m, Altitude Change={mission['altitude_change']} m"
             elif mission["type"] == "Climb":
-                detail += f", Altitude Gained={mission['altitude_change']} m, Climb Rate={mission['climb_rate']} m/s"
+                detail += f", Altitude Gained={mission['altitude_change']} m, Climb Rate={mission['climb_vel']} m/s"
             self.maneuvers_listbox.insert(tk.END, detail)
 
     def delete_maneuver(self):
@@ -185,7 +185,7 @@ class MainWindow:
             "fuel_mass": float(self.fuel.get()),
             "mission_phases": self.maneuvers
         }
-        with open("mission_data.json", "w") as f:
+        with open("input_files/mission_data.json", "w") as f:
             json.dump(mission_data, f, indent=4)
 
 # Run the main application
