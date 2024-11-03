@@ -28,13 +28,9 @@ class MissionPlannerGUI:
         self.mission_type_dropdown.bind("<<ComboboxSelected>>", lambda e: self.update_mission_fields(self.mission_type.get()))
 
         # Mission Parameters
-        tk.Label(mission_frame, text="Mass (kg):").grid(column=0, row=1, sticky="w")
+        tk.Label(mission_frame, text="Dry Mass (kg):").grid(column=0, row=1, sticky="w")
         self.mass = ttk.Entry(mission_frame)
         self.mass.grid(column=1, row=1, pady=5, sticky="ew")
-
-        tk.Label(mission_frame, text="Fuel (kg):").grid(column=0, row=2, sticky="w")
-        self.fuel = ttk.Entry(mission_frame)
-        self.fuel.grid(column=1, row=2, pady=5, sticky="ew")
 
         tk.Label(mission_frame, text="Altitude (m):").grid(column=0, row=3, sticky="w")
         self.altitude = ttk.Entry(mission_frame)
@@ -103,15 +99,16 @@ class MissionPlannerGUI:
         mission_data = {
             "type": self.mission_type.get(),
             "mass": float(self.mass.get()),
-            "fuel": float(self.fuel.get()),
             "altitude": float(self.altitude.get()),
-            "V_inf": float(self.v_inf.get()),
+            "V_inf": float(self.v_inf.get()) if self.mission_type.get() == "Forward Flight" else 0,
             "time_taken":   float(self.time_taken.get()) if self.mission_type.get() == "Hover" else \
                             float(self.distance_traveled.get()) / float(self.v_inf.get()) if self.mission_type.get() == "Forward Flight" else \
                             abs(float(self.altitude_change.get()) / float(self.climb_rate.get())) if self.mission_type.get() == "Climb" else 0,
             "distance_traveled": float(self.distance_traveled.get()) if self.mission_type.get() == "Forward Flight" else 0,
             "altitude_change": float(self.altitude_change.get()) if self.mission_type.get() in ["Forward Flight", "Climb"] else 0,
-            "climb_vel": float(self.climb_rate.get()) if self.mission_type.get() == "Climb" else 0
+            "climb_vel":    float(self.climb_rate.get()) if self.mission_type.get() == "Climb" else \
+                            abs(float(self.altitude_change.get()) / (float(self.distance_traveled.get()) / float(self.v_inf.get()))) if self.mission_type.get() == "Forward Flight" else \
+                            0
         }
         
         self.main_app.add_mission_data(mission_data)
@@ -131,11 +128,15 @@ class MainWindow:
         self.temp_dev_isa = ttk.Entry(self.window)
         self.temp_dev_isa.grid(column=1, row=1, padx=20, pady=10, sticky="ew")
 
+        tk.Label(self.window, text="Initial Fuel (kg):").grid(column=0, row=2, sticky="w", padx=20, pady=10)
+        self.fuel = ttk.Entry(self.window)
+        self.fuel.grid(column=1, row=2, padx=20, pady=10, sticky="ew")
+
         self.add_maneuver_button = ttk.Button(self.window, text="Add Mission Phase", command=self.add_maneuver, style="TButton")
-        self.add_maneuver_button.grid(column=0, row=2, padx=20, pady=10, sticky="ew")
+        self.add_maneuver_button.grid(column=0, row=3, padx=20, pady=10, sticky="ew")
 
         maneuvers_frame = ttk.LabelFrame(self.window, text="Mission Phases", padding=(10, 10))
-        maneuvers_frame.grid(column=0, row=3, padx=20, pady=10, sticky="nsew", columnspan=2)
+        maneuvers_frame.grid(column=0, row=4, padx=20, pady=10, sticky="nsew", columnspan=2)
 
         self.maneuvers_listbox = tk.Listbox(maneuvers_frame, height=15, width=70, selectmode=tk.SINGLE)
         self.maneuvers_listbox.grid(row=0, column=0, sticky="nsew", pady=(0, 5))
@@ -145,10 +146,10 @@ class MainWindow:
         self.scrollbar.grid(row=0, column=1, sticky="ns")
 
         self.delete_button = ttk.Button(self.window, text="Delete Selected Phase", command=self.delete_maneuver, style="TButton")
-        self.delete_button.grid(column=0, row=4, padx=20, pady=10, sticky="ew")
+        self.delete_button.grid(column=0, row=5, padx=20, pady=10, sticky="ew")
 
         self.save_button = ttk.Button(self.window, text="Save Mission Data to JSON", command=self.save_to_json, style="TButton")
-        self.save_button.grid(column=1, row=4, padx=20, pady=10, sticky="ew")
+        self.save_button.grid(column=1, row=5, padx=20, pady=10, sticky="ew")
 
         self.maneuvers = []
         self.window.mainloop()
@@ -163,7 +164,7 @@ class MainWindow:
     def update_maneuvers_listbox(self):
         self.maneuvers_listbox.delete(0, tk.END)
         for mission in self.maneuvers:
-            detail = f"Type={mission['type']}, Mass={mission['mass']} kg, Fuel={mission['fuel']} kg, Altitude={mission['altitude']} m"
+            detail = f"Type={mission['type']}, Mass={mission['mass']} kg, Altitude={mission['altitude']} m"
             if mission["type"] == "Hover":
                 detail += f", Time Taken={mission['time_taken']} s"
             elif mission["type"] == "Forward Flight":
@@ -180,7 +181,8 @@ class MainWindow:
 
     def save_to_json(self):
         mission_data = {
-            "temp_dev_isa": self.temp_dev_isa.get(),
+            "temp_dev_isa": float(self.temp_dev_isa.get()),
+            "fuel_mass": float(self.fuel.get()),
             "mission_phases": self.maneuvers
         }
         with open("mission_data.json", "w") as f:

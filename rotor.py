@@ -101,6 +101,7 @@ class rotor:
             blade_conditions.add_payload({  'omega':self.omega,
                                             'V_inf': input_data['V_inf'],
                                             'phi': phi,
+                                            'climb_vel': input_data['climb_vel'],
                                             'atmosphere': input_data['atmosphere'],
                                             'pitch': input_data['collective'] 
                                                     + input_data['cyclic_c']*np.cos(phi) 
@@ -345,6 +346,7 @@ class rotor:
                 controls = message.simMessage()
                 controls.add_payload({  'thrust':np.linalg.norm(F_desired),
                                         'atmosphere': conditions['atmosphere'],
+                                        'climb_vel': conditions['climb_vel'],
                                         'V_inf': conditions['V_inf'],
                                         'tpp_angle': tpp_angle,
                                         'collective': collective,
@@ -388,6 +390,7 @@ class rotor:
         controls = {'collective':collective,
                     'cyclic_c':cyclic_c,
                     'cyclic_s':cyclic_s,
+                    'climb_vel':conditions['climb_vel'],
                     'beta_0':beta_0,
                     'tpp_angle':tpp_angle,
                     'tr_collective':tr_collective}

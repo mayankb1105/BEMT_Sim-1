@@ -18,6 +18,7 @@ class mission:
             raw_data = json.load(file)
 
         self.temp_dev_isa = np.array(raw_data["temp_dev_isa"])
+        self.fuel_mass = raw_data["fuel_mass"]
         self.flight_segments = maneuver.create_maneuvers(raw_data["mission_phases"])
 
     def endurance(self):

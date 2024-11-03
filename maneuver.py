@@ -57,7 +57,7 @@ class forward_flight(maneuver):
                                                                     'atmosphere':self.atmosphere.get_payload(),'drag_area':0.3}) # For passing to the rotor
         rotors_result = vehicle_state['main_rotor'].set_trim_forward_flight(vehicle_parameters_main_rotor,vehicle_state['fbd'],vehicle_state['tail_rotor']).get_payload()
 
-        power_required = rotors_result['mr_performance']['power'] + rotors_result['tr_performance']['power']
+        power_required = rotors_result['mr_performance']['power'] + rotors_result['tr_performance']['power'] + self.climb_vel*vehicle_state['mass']*g
         fuel_burn_rate_parameters = message.simMessage(payload={'power_required':power_required,
                                                                 'altitude':self.parameters['altitude'],
                                                                 'temp_dev_isa':self.parameters['temp_dev_isa']})
@@ -75,10 +75,10 @@ def create_maneuvers(maneuver_params):
 
     for man in maneuver_params:
 
-        if man['type'] == 'hover':
+        if man['type'] == 'Hover':
             return hover(man)
-        elif man['type'] == 'forward_flight':
+        elif man['type'] == 'Forward Flight':
             return forward_flight(man)        
-        # elif man['type'] == 'climb':
-        #     return climb(man)
+        elif man['type'] == 'Climb':
+            return hover(man)
             

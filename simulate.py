@@ -6,7 +6,7 @@ tr = rotor.rotor("input_files/tail_rotor.json")
 atmos = {'temperature': 15, 'pressure': 101325, 'density': 1.225}
 thrust = np.sqrt((150*9.81)**2 + (150)**2)
 message.simMessage.warnings_suprressed = True
-rotor_inp = message.simMessage(payload={'mass':450,'thrust':thrust,'drag_area':0.3,'lateral_force':0,'atmosphere':atmos,'beta_0':3.485*3.14/180,
+rotor_inp = message.simMessage(payload={'mass':450,'thrust':thrust,'drag_area':0.3,'atmosphere':atmos,'beta_0':3.485*3.14/180,
                                                             'cyclic_c':0.33*3.14/180,'cyclic_s':-2.21389*3.14/180,'collective':5.1*3.14/180,
                                                             'tpp_angle':np.array([np.arctan(1/9.81),0]),
                                                             "V_inf":30,'climb_vel':0,'headwind':0,'crosswind':0})

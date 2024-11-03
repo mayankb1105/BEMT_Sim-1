@@ -1,25 +1,26 @@
 {
-    "temp_dev_isa": "1",
+    "temp_dev_isa": "",
+    "fuel_mass": "",
     "mission_phases": [
         {
             "type": "Hover",
-            "mass": "20",
-            "fuel": "20",
-            "altitude": "20",
-            "V_inf": "",
-            "time_taken": "20",
-            "distance_traveled": "",
-            "altitude_change": ""
+            "mass": 10.0,
+            "altitude": 0.0,
+            "V_inf": 0,
+            "time_taken": 100.0,
+            "distance_traveled": 0,
+            "altitude_change": 0,
+            "climb_vel": 0
         },
         {
             "type": "Forward Flight",
-            "mass": "20",
-            "fuel": "20",
-            "altitude": "20",
-            "V_inf": "20",
-            "time_taken": "",
-            "distance_traveled": "20",
-            "altitude_change": "2"
+            "mass": 10.0,
+            "altitude": 10.0,
+            "V_inf": 10.0,
+            "time_taken": 1.0,
+            "distance_traveled": 10.0,
+            "altitude_change": 10.0,
+            "climb_vel": 10.0
         }
     ]
 }
