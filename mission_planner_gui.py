@@ -21,7 +21,7 @@ class MissionPlannerGUI:
         self.mission_type_dropdown.bind("<<ComboboxSelected>>", lambda e: self.update_mission_fields(self.mission_type.get()))
 
         # Mission Parameters
-        tk.Label(mission_frame, text="Mass (kg):").grid(column=0, row=1, sticky="w")
+        tk.Label(mission_frame, text="Dry Mass (kg):").grid(column=0, row=1, sticky="w")
         self.mass = ttk.Entry(mission_frame)
         self.mass.grid(column=1, row=1, pady=5, sticky="ew")
 
@@ -48,6 +48,10 @@ class MissionPlannerGUI:
 
         self.headwind_label = tk.Label(mission_frame, text="Headwind (m/s):")
         self.headwind = ttk.Entry(mission_frame)
+
+        # Submit Button
+        self.submit_button = ttk.Button(self.window, text="Submit", command=self.submit)
+        self.submit_button.grid(column=0, row=9, columnspan=2, padx=20, pady=20, sticky="ew")
 
         self.distance_traveled.bind("<FocusOut>", lambda e: self.calculate_time())
         self.time_taken.bind("<FocusOut>", lambda e: self.calculate_distance())
@@ -132,14 +136,15 @@ class MissionPlannerGUI:
         """Collect and submit mission data."""
         mission_data = {
             "type": self.mission_type.get(),
-            "mass": self.mass.get(),
-            "altitude": self.altitude.get(),
-            "V_inf": self.v_inf.get(),
-            "time_taken": self.time_taken.get() if self.mission_type.get() == "Hover" else "",
-            "distance_traveled": self.distance_traveled.get() if self.mission_type.get() == "Forward Flight" else "",
-            "altitude_change": self.altitude_change.get() if self.mission_type.get() in ["Forward Flight", "Climb"] else "",
-            "climb_rate": self.climb_rate.get() if self.mission_type.get() == "Climb" else "",
-            "headwind": self.headwind.get() if self.mission_type.get() == "Forward Flight" else ""
+            "dry_mass": float(self.mass.get()),
+            "altitude": float(self.altitude.get()),
+            "V_inf": float(self.v_inf.get()) if self.mission_type.get() == "Forward Flight" else 0,
+            "time_taken": float(self.altitude_change.get())/float(self.climb_rate.get()) if self.mission_type.get() == "Climb" else float(self.time_taken.get()),
+            "distance_traveled": float(self.distance_traveled.get()) if self.mission_type.get() == "Forward Flight" else 0,
+            "altitude_change": float(self.altitude_change.get()) if self.mission_type.get() in ["Forward Flight", "Climb"] else 0,
+            "climb_vel": float(self.climb_rate.get()) if self.mission_type.get() == "Climb" else \
+                         float(self.altitude_change.get())/float(self.time_taken.get()) if self.mission_type.get() == "Forward Flight" else 0,
+            "headwind": float(self.headwind.get()) if self.mission_type.get() == "Forward Flight" else 0
         }
         
         self.main_app.add_mission_data(mission_data)
@@ -211,13 +216,13 @@ class MainWindow:
     def update_maneuvers_listbox(self):
         self.maneuvers_listbox.delete(0, tk.END)
         for mission in self.maneuvers:
-            detail = f"Type={mission['type']}, Mass={mission['mass']} kg, Altitude={mission['altitude']} m, V_inf={mission['V_inf']} m/s"
+            detail = f"Type={mission['type']}, Dry Mass={mission['dry_mass']} kg, Altitude={mission['altitude']} m, V_inf={mission['V_inf']} m/s"
             if mission["type"] == "Hover":
                 detail += f", Time Taken={mission['time_taken']} s"
             elif mission["type"] == "Forward Flight":
                 detail += f", Distance={mission['distance_traveled']} m, Altitude Change={mission['altitude_change']} m, Headwind={mission['headwind']} m/s"
             elif mission["type"] == "Climb":
-                detail += f", Altitude Gained={mission['altitude_change']} m, Climb Rate={mission['climb_rate']} m/s"
+                detail += f", Altitude Gained={mission['altitude_change']} m, Climb Rate={mission['climb_vel']} m/s"
             self.maneuvers_listbox.insert(tk.END, detail)
 
     def delete_maneuver(self):
@@ -228,8 +233,8 @@ class MainWindow:
 
     def save_to_json(self):
         mission_data = {
-            "temp_dev_isa": self.temp_dev_isa.get(),
-            "fuel": self.fuel.get(),
+            "temp_dev_isa": float(self.temp_dev_isa.get()),
+            "fuel": float(self.fuel.get()),
             "mission_phases": self.maneuvers
         }
         filename = self.filename_entry.get()  # Get the filename from the entry box

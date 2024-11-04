@@ -6,9 +6,11 @@ class maneuver:
         
         self.parameters = maneuver_params
         self.altitude = self.parameters["altitude"]
-        self.atmosphere = atmosphere.ISA(0).get_atmosphere(self.parameters['altitude']).get_payload()
         self.climb_vel = self.parameters["climb_vel"]
-        self.dry_mass = self.parameters["mass"]
+        self.dry_mass = self.parameters["dry_mass"]
+        self.time_taken = self.parameters["time_taken"]
+        self.V_inf = self.parameters["V_inf"]
+        self.headwind = self.parameters["headwind"]
 
 ### For now this class doesn't account for wind conditions or unwanted effects of tail rotor. Should be added later
 class hover(maneuver):
@@ -18,7 +20,7 @@ class hover(maneuver):
         vehicle_state = vehicle_state.get_payload()
         # Calculate the power consumed by the main rotor to match the weight of the vehicle
         vehicle_parameters_main_rotor = message.simMessage()
-        vehicle_parameters_main_rotor.add_payload({'mass':vehicle_state['mass'], 'desired_thrust': vehicle_state['mass']*g, 'atmosphere':self.atmosphere, 'climb_vel':self.climb_vel}) # For passing to the rotor
+        vehicle_parameters_main_rotor.add_payload({'mass':vehicle_state['mass'], 'desired_thrust': vehicle_state['mass']*g, 'atmosphere':vehicle_state['atmosphere'], 'climb_vel':self.climb_vel}) # For passing to the rotor
         main_rotor_performance = vehicle_state['main_rotor'].set_thrust(vehicle_parameters_main_rotor).get_payload()
 
         # Calculate the thrust required by the tail rotor to match the torque of the main rotor
@@ -27,7 +29,7 @@ class hover(maneuver):
         # /////////////////////////////////////////////////////////////////////////////
 
         # Calculate the power consumed by the tail rotor to match the torque of the main rotor
-        vehicle_parameters_tail_rotor = message.simMessage(payload={'mass':vehicle_state['mass'], 'desired_thrust': tail_rotor_thrust, 'atmosphere': self.atmosphere, 'climb_vel':self.climb_vel}) # For passing to the rotor
+        vehicle_parameters_tail_rotor = message.simMessage(payload={'mass':vehicle_state['mass'], 'desired_thrust': tail_rotor_thrust, 'atmosphere': vehicle_state['atmosphere'], 'climb_vel':self.climb_vel}) # For passing to the rotor
         tail_rotor_performance = vehicle_state['tail_rotor'].set_thrust(vehicle_parameters_tail_rotor).get_payload()
 
         # Calculate fuel consumption rate for both rotors
@@ -55,12 +57,12 @@ class forward_flight(maneuver):
         vehicle_parameters_main_rotor = message.simMessage(payload={'mass':vehicle_state['mass'],
                                                                     'climb_vel':self.climb_vel,
                                                                     'V_inf':self.parameters['V_inf'],
-                                                                    'atmosphere':self.atmosphere,'drag_area':vehicle_state['drag_area']}) # For passing to the rotor
+                                                                    'atmosphere':vehicle_state['atmosphere'],'drag_area':vehicle_state['drag_area']}) # For passing to the rotor
         rotors_result = vehicle_state['main_rotor'].set_trim_forward_flight(vehicle_parameters_main_rotor,vehicle_state['fbd'],vehicle_state['tail_rotor']).get_payload()
 
         power_required = rotors_result['mr_performance']['power'] + rotors_result['tr_performance']['power'] + self.climb_vel*vehicle_state['mass']*g
         fuel_burn_rate_parameters = message.simMessage(payload={'power_required':power_required,
-                                                                'altitude':self.parameters['altitude'],
+                                                                'altitude':vehicle_state['altitude'],
                                                                 'temp_dev_isa':vehicle_state['temp_dev_isa']})
         fuel_burn_rate = vehicle_state['powerplant'].get_fuel_rate(fuel_burn_rate_parameters)
         

@@ -9,6 +9,18 @@ class mission:
             self.engine = powerplant.powerplant()
             with open(self.heli_file_path, 'r' ) as heli_file_path:
                 self.heli_data = json.load( heli_file_path )
+
+            self.mission_log = {'timestamp':[],
+                           'gross_weight':[],
+                           'fuel_weight':[],
+                           'fuel_burn_rate':[],
+                           'altitude':[],
+                           'power_required':[],
+                           'power_available':[],
+                           'airspeed':[],
+                           'groundspeed':[],
+                           'climb_rate':[],
+                           'distance_covered':[]}
             
             self.read_mission_data()
 
@@ -19,8 +31,13 @@ class mission:
             raw_data = json.load(file)
 
         self.temp_dev_isa = raw_data["temp_dev_isa"]
-        self.fuel_mass = raw_data["fuel_mass"]
+        self.fuel_mass = raw_data["fuel"]  # Stores the fuel mass in operation
         self.flight_segments = maneuver.create_maneuvers(raw_data["mission_phases"])
+        self.dry_mass = 0
+        self.altitude = 0  # Stores current altitude in operation
+        self.timestamp = 0 # Time since mission started
+        self.distance_travelled = 0
+        self.atmosphere = atmosphere.ISA(self.temp_dev_isa)
         self.fbd = dynamics.FBD(self.fbd_file_path)
         self.main_rotor = rotor.rotor(self.heli_data['main_rotor_path'])
         self.tail_rotor = rotor.rotor(self.heli_data['tail_rotor_path'])
@@ -32,23 +49,12 @@ class mission:
         fuel_burn_rate=self.flight_segments.get_fuel_burn_rate(vehicle_state)
         return self.heli_data['fuel_mass']/fuel_burn_rate
 
-mis=mission("input_files/mission_data.json","input_files/heli.json","input_files/fbd.json")
+mis=mission("input_files/mission_A.json","input_files/heli.json","input_files/fbd.json")
 mis.read_mission_data()
 
-timestamp = [0]
-gross_weight = [mis.flight_segments[0].dry_mass + mis.fuel_mass]
-fuel_weight = [mis.fuel_mass]
-fuel_burn_rate = [0]
-altitude = [mis.flight_segments[0].altitude]
-power_required = [0]
-power_available = [0]
-airspeed = [mis.flight_segments[0].parameters['V_inf']]
-climb_rate = [mis.flight_segments[0].parameters['climb_vel']]
-distance_covered = [0]
 
-
-basic_input = message.simMessage()
-basic_input.add_payload({ 'drag_area':mis.heli_data['flat_plate_area'],
+common_input = message.simMessage()
+common_input.add_payload({ 'drag_area':mis.heli_data['flat_plate_area'],
                          'temp_dev_isa':mis.temp_dev_isa,
                        'main_rotor':mis.main_rotor,
                        'tail_rotor':mis.tail_rotor,
@@ -59,70 +65,49 @@ segments_done = 0
 
 for segment in mis.flight_segments:
 
-    for t in range(int(segment.parameters['time_taken'] / 60)):
-         
-        input = message.simMessage()
-        input.add_payload({'mass':segment.dry_mass + mis.fuel_mass,
-                        'V_inf':segment.parameters['V_inf'],
-                        'climb_vel':segment.parameters['climb_vel']})
-        
-        input = input + basic_input
-        segment.altitude -= segment.climb_vel*t*60
-        result = segment.get_fuel_burn_rate(input).get_payload()
+    time_left = segment.time_taken
+    mis.dry_mass = segment.dry_mass
+    mis.altitude = segment.altitude
+    dt = 0
 
-        mis.fuel_mass -= result['fuel_burn_rate']*60
-        timestamp.append(timestamp[-1] + 60)
-        gross_weight.append(segment.dry_mass + mis.fuel_mass)
-        fuel_weight.append(mis.fuel_mass)
-        fuel_burn_rate.append(result['fuel_burn_rate'])
-        altitude.append(segment.altitude - segment.climb_vel*t*60)
-        power_required.append(result['power_required'])
-        power_available.append(result['power_available'])
-        airspeed.append(segment.parameters['V_inf'])
-        climb_rate.append(segment.parameters['climb_vel'])
-        distance_covered.append(distance_covered[-1] + segment.parameters['V_inf']*60) # Headwind is now availble in segment parameters ADD ITTTTT!!!!!
+    while time_left >= 0:
+        
+        inst_input = message.simMessage()
+        inst_input.add_payload({'mass':mis.dry_mass + mis.fuel_mass,
+                        'V_inf':segment.V_inf,
+                        'altitude':mis.altitude,
+                        'climb_vel':segment.climb_vel,
+                        'atmosphere':mis.atmosphere.get_atmosphere(mis.altitude).get_payload()})
+        input = inst_input + common_input
+        performance_result = segment.get_fuel_burn_rate(input).get_payload()
+
+        # Updatin all the parameters
+        mis.timestamp += dt
+        mis.fuel_mass -= performance_result['fuel_burn_rate'] * dt
+        mis.altitude += segment.climb_vel * dt
+        mis.distance_travelled += (segment.V_inf - segment.headwind) * dt
+
+        # Log all the mission parameters
+        mis.mission_log['timestamp'].append(mis.timestamp)
+        mis.mission_log['gross_weight'].append(mis.dry_mass + mis.fuel_mass)
+        mis.mission_log['fuel_weight'].append(mis.fuel_mass)
+        mis.mission_log['fuel_burn_rate'].append(performance_result['fuel_burn_rate'])
+        mis.mission_log['altitude'].append(mis.altitude)
+        mis.mission_log['power_required'].append(performance_result['power_required'])
+        mis.mission_log['power_available'].append(performance_result['power_available'])
+        mis.mission_log['airspeed'].append(segment.V_inf)
+        mis.mission_log['groundspeed'].append(segment.V_inf - segment.headwind)
+        mis.mission_log['climb_rate'].append(segment.climb_vel)
+        mis.mission_log['distance_covered'].append(mis.distance_travelled)
+
+        if time_left == 0:
+            break
+        time_left -= dt
+        dt = min(MISSION_TIME_STEP, time_left)
 
     segments_done += 1
     print(f"segment {segments_done} of {len(mis.flight_segments)} completed")
 
 # write the results to a file
-with open('output_files/mission_results.json', 'w') as file:
-    json.dump({'timestamp':timestamp, 'gross_weight':gross_weight, 'fuel_weight':fuel_weight, 'fuel_burn_rate':fuel_burn_rate,
-               'altitude':altitude, 'power_required':power_required, 'power_available':power_available,
-               'airspeed':airspeed, 'climb_rate':climb_rate, 'distance_covered':distance_covered}, file)
-
-plt.figure()
-plt.plot(timestamp, gross_weight, label='Gross Weight')
-plt.plot(timestamp, fuel_weight, label='Fuel Weight')
-plt.xlabel('Time (s)')
-plt.ylabel('Weight (kg)')
-plt.legend()
-plt.grid()
-
-# power required and power available
-plt.figure()
-plt.plot(timestamp, power_required, label='Power Required')
-plt.plot(timestamp, power_available, label='Power Available')
-plt.xlabel('Time (s)')
-plt.ylabel('Power (W)')
-plt.legend()
-plt.grid()
-
-# altitude and airspeed
-plt.figure()
-plt.plot(timestamp, altitude, label='Altitude')
-plt.plot(timestamp, airspeed, label='Airspeed')
-plt.xlabel('Time (s)')
-plt.ylabel('Altitude (m) / Airspeed (m/s)')
-plt.legend()
-plt.grid()
-
-# climb rate
-plt.figure()
-plt.plot(timestamp, climb_rate, label='Climb Rate')
-plt.xlabel('Time (s)')
-plt.ylabel('Climb Rate (m/s)')
-plt.legend()
-plt.grid()
-
-plt.show()
+with open('output_files/mission_A_results.json', 'w') as file:
+    json.dump(mis.mission_log, file)

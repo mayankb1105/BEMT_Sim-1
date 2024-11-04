@@ -84,6 +84,6 @@ class powerplant:
         throttle = sim_data['power_required']/peak_power/1000 * 100
         response.add_payload({'fuel_burn_rate':fuel_burn_rate})
         response.add_payload({'throttle':throttle})
-        response.add_payload({'power_available':peak_power})
+        response.add_payload({'power_available':peak_power*1000})
 
         return response

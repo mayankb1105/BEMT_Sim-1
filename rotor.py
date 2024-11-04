@@ -354,7 +354,8 @@ class rotor:
                                         'cyclic_s': cyclic_s,
                                         'beta_0': beta_0 })
                 
-                mr_performance = self.get_performance_forward_flight(controls).get_payload(suppress_warnings=True)
+                mr_performance_message = self.get_performance_forward_flight(controls)
+                mr_performance = mr_performance_message.get_payload(suppress_warnings=True)
                 if np.linalg.norm(mr_performance['thrust'] * np.cos(tpp_angle[0]) * np.cos(tpp_angle[1]) * np.array([np.tan(tpp_angle[1]), np.tan(tpp_angle[0]), 1]) - F_desired) < ACCELERATION_TOLERANCE * conditions['mass'] and \
                 np.linalg.norm((mr_performance['moments'] - M_desired)[:2]) < ACCELERATION_TOLERANCE*self.blade.radius:
                     break
@@ -370,7 +371,9 @@ class rotor:
                                         'mass':conditions['mass'],
                                         'climb_vel':0,
                                         'atmosphere':conditions['atmosphere']})
-            tr_performance = tail_rotor.set_thrust(tr_conditions).get_payload()
+            
+            tr_performance_message = tail_rotor.set_thrust(tr_conditions)
+            tr_performance = tr_performance_message.get_payload()
             tr_collective = tr_performance['collective']
             F_desired[0] = -tr_performance['thrust'] # Tail rotor thrust has to be balanced by main rotor
 
@@ -386,6 +389,9 @@ class rotor:
             # This will only run if the collective pitch doesn't converge or the rotor can't produce enough thrust
             if j == CONTROLS_CONVERGENCE_ITERATIONS - 1:
                 response.add_error({'ConvergenceError':'Forces did not converge. Try increasing CONTROLS_CONVERGENCE_ITERATIONS.'})
+
+        _ = mr_performance_message.get_payload(suppress_warnings=False) # To check for pending warnings after convergence
+        _ = tr_performance_message.get_payload(suppress_warnings=False) # To check for pending warnings after convergence
 
         controls = {'collective':collective,
                     'cyclic_c':cyclic_c,
