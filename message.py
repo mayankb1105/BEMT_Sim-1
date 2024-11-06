@@ -45,7 +45,7 @@ class simMessage:
     def add_error(self, error_dict):        
         self.errors.update(error_dict)
 
-    def get_payload(self, suppress_warnings = False, suppress_errors = False):
+    def get_payload(self, suppress_warnings = warnings_suprressed, suppress_errors = errors_suprressed):
 
         if not suppress_warnings:
             for key, value in self.warnings.items():
@@ -57,7 +57,7 @@ class simMessage:
 
         return self.payload
     
-    def get_warnings(self, suppress_errors = False):
+    def get_warnings(self, suppress_errors = errors_suprressed):
         if not suppress_errors:
             for key, value in self.errors.items():
                 raise Exception(f'\33[31mError: {key} : {value}\33[0m')

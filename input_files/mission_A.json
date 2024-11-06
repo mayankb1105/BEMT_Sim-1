@@ -1,0 +1,116 @@
+{
+    "temp_dev_isa": 0.0,
+    "fuel": 50.0,
+    "mission_phases": [
+        {
+            "type": "Climb",
+            "dry_mass": 150.0,
+            "altitude": 2000.0,
+            "V_inf": 0,
+            "time_taken": 20.0,
+            "distance_traveled": 0,
+            "altitude_change": 20.0,
+            "climb_vel": 1.0,
+            "headwind": 0
+        },
+        {
+            "type": "Forward Flight",
+            "dry_mass": 150.0,
+            "altitude": 2020.0,
+            "V_inf": 19.555,
+            "time_taken": 320.0,
+            "distance_traveled": 8035.2,
+            "altitude_change": 480.0,
+            "climb_vel": 1.5,
+            "headwind": -5.555
+        },
+        {
+            "type": "Forward Flight",
+            "dry_mass": 150.0,
+            "altitude": 2500.0,
+            "V_inf": 19.555,
+            "time_taken": 597.37,
+            "distance_traveled": 15000.0,
+            "altitude_change": 0.0,
+            "climb_vel": 0.0,
+            "headwind": -5.555
+        },
+        {
+            "type": "Forward Flight",
+            "dry_mass": 150.0,
+            "altitude": 2500.0,
+            "V_inf": 19.555,
+            "time_taken": 200.0,
+            "distance_traveled": 5022.0,
+            "altitude_change": -200.0,
+            "climb_vel": -1.0,
+            "headwind": -5.555
+        },
+        {
+            "type": "Hover",
+            "dry_mass": 150.0,
+            "altitude": 2300.0,
+            "V_inf": 0,
+            "time_taken": 60.0,
+            "distance_traveled": 0,
+            "altitude_change": 0,
+            "climb_vel": 0,
+            "headwind": 0
+        },
+        {
+            "type": "Climb",
+            "dry_mass": 100.0,
+            "altitude": 2290.0,
+            "V_inf": 0,
+            "time_taken": 10.0,
+            "distance_traveled": 0,
+            "altitude_change": 10.0,
+            "climb_vel": 1.0,
+            "headwind": 0
+        },
+        {
+            "type": "Forward Flight",
+            "dry_mass": 100.0,
+            "altitude": 2300.0,
+            "V_inf": 19.555,
+            "time_taken": 200.0,
+            "distance_traveled": 2800.0,
+            "altitude_change": 200.0,
+            "climb_vel": 1.0,
+            "headwind": 5.555
+        },
+        {
+            "type": "Forward Flight",
+            "dry_mass": 100.0,
+            "altitude": 2500.0,
+            "V_inf": 19.555,
+            "time_taken": 1071.43,
+            "distance_traveled": 15000.0,
+            "altitude_change": 0.0,
+            "climb_vel": 0.0,
+            "headwind": 5.555
+        },
+        {
+            "type": "Forward Flight",
+            "dry_mass": 100.0,
+            "altitude": 2500.0,
+            "V_inf": 19.555,
+            "time_taken": 320.0,
+            "distance_traveled": 4480.0,
+            "altitude_change": -480.0,
+            "climb_vel": -1.5,
+            "headwind": 5.555
+        },
+        {
+            "type": "Hover",
+            "dry_mass": 100.0,
+            "altitude": 2000.0,
+            "V_inf": 0,
+            "time_taken": 20.0,
+            "distance_traveled": 0,
+            "altitude_change": 0,
+            "climb_vel": 0,
+            "headwind": 0
+        }
+    ]
+}
